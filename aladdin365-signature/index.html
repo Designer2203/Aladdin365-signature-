@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aladdin365 Email Signature Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #F3FBFC;
+    --surface: #FFFFFF;
+    --ink: #0B1420;
+    --muted: #5B6B72;
+    --line: #D5EEF0;
+    --blue: #2D3A8D;
+    --purple: #A24880;
+    --cyan: #49C2EA;
+    --focus: #2D3A8D;
+    --ok: #0B7A4B;
+    --err: #C0262D;
+    --stage: #FFFFFF;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0C1418; --surface: #131E23; --ink: #E7F2F4; --muted: #9AAEB4;
+      --line: #24363C; --blue: #7C86FF; --purple: #C78BE0; --focus: #8E97FF;
+      --ok: #5BD69E; --err: #FF7B80; --stage: #FFFFFF;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0C1418; --surface: #131E23; --ink: #E7F2F4; --muted: #9AAEB4;
+    --line: #24363C; --blue: #7C86FF; --purple: #C78BE0; --focus: #8E97FF;
+    --ok: #5BD69E; --err: #FF7B80; --stage: #FFFFFF;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Poppins", "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+           border-bottom: 2px solid var(--cyan); padding-bottom: 18px; margin-bottom: 28px; }
+  h1 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+  h1 span { color: var(--blue); }
+  header p { margin: 4px 0 0; color: var(--muted); max-width: 60ch; }
+  h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 14px; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 0.84rem; font-weight: 500; margin-bottom: 6px; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="url"] {
+    width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px;
+  }
+  input:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  input[aria-invalid="true"] { border-color: var(--err); }
+  .hint { font-size: 0.78rem; color: var(--muted); margin-top: 5px; min-height: 1.2em; }
+  .hint.err { color: var(--err); }
+
+  .preview { margin-top: 24px; }
+  .preview-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .preview-head h2 { margin: 0; }
+  .stage { background: var(--stage); border: 1px solid var(--line); border-radius: 12px; padding: 24px; overflow-x: auto; }
+  .stage-inner { width: 1000px; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 0.9rem; font-weight: 500; border-radius: 9px; padding: 10px 16px; cursor: pointer; border: 1px solid transparent; }
+  .primary { background: #A24880; color: #FFFFFF; }
+  .primary:hover { background: #8A3A6C; }
+  .secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+  .secondary:hover { border-color: var(--blue); }
+  button[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .status { font-size: 0.85rem; min-height: 1.3em; margin-top: 10px; }
+  .status.ok { color: var(--ok); } .status.err { color: var(--err); }
+
+  details { margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 22px; }
+  details + details { margin-top: 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details ol, details ul { padding-left: 1.2em; margin: 12px 0 4px; max-width: 75ch; }
+  details li { margin-bottom: 6px; }
+  code { font-size: 0.85em; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; word-break: break-all; }
+  .note { font-size: 0.84rem; color: var(--muted); max-width: 75ch; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span>Aladdin365</span> email signature</h1>
+      <p>Fill in your details, check the preview, then copy the signature into Gmail or Outlook.</p>
+    </div>
+  </header>
+
+  <section class="panel" aria-labelledby="details-h">
+    <h2 id="details-h">Your details</h2>
+    <div class="grid">
+      <div>
+        <label for="f-name">Employee name</label>
+        <input id="f-name" type="text" autocomplete="name" placeholder="e.g. Priya Raman">
+        <div class="hint" id="h-name"></div>
+      </div>
+      <div>
+        <label for="f-desig">Designation</label>
+        <input id="f-desig" type="text" autocomplete="organization-title" placeholder="e.g. Marketing Manager">
+        <div class="hint" id="h-desig"></div>
+      </div>
+      <div>
+        <label for="f-phone">Mobile number</label>
+        <input id="f-phone" type="tel" autocomplete="tel" placeholder="e.g. +91 98765 43210">
+        <div class="hint" id="h-phone"></div>
+      </div>
+      <div>
+        <label for="f-email">Work email</label>
+        <input id="f-email" type="email" autocomplete="email" placeholder="e.g. priya@aladdin365.com">
+        <div class="hint" id="h-email"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="preview" aria-labelledby="preview-h">
+    <div class="preview-head">
+      <h2 id="preview-h">Live preview</h2>
+      <div class="actions">
+        <button class="primary" id="btn-copy" type="button">Copy signature</button>
+        <button class="secondary" id="btn-copy-html" type="button">Copy HTML code</button>
+        <button class="secondary" id="btn-reset" type="button">Clear details</button>
+      </div>
+    </div>
+    <div class="stage"><div class="stage-inner" id="preview"></div></div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <details>
+    <summary>Add the signature to Gmail</summary>
+    <ol>
+      <li>Click <strong>Copy signature</strong> above.</li>
+      <li>In Gmail, open <strong>Settings (gear) → See all settings → General → Signature</strong>.</li>
+      <li>Click <strong>Create new</strong>, name it, then click inside the editor and paste (Ctrl + V / ⌘ + V).</li>
+      <li>Set it as the default for new emails and replies, scroll down and click <strong>Save changes</strong>.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>Add the signature to Outlook</summary>
+    <ol>
+      <li><strong>Outlook on the web / new Outlook:</strong> Settings → Account → Signatures → New signature, paste, then Save.</li>
+      <li><strong>Outlook desktop (classic):</strong> File → Options → Mail → Signatures → New, paste into the editor, then OK.</li>
+      <li>If Outlook pastes it without layout, use <strong>Copy HTML code</strong> instead and ask IT to install it as an <code>.htm</code> signature file.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>Image hosting (for the admin)</summary>
+    <p class="note">The copied signature loads its images from the address below. Upload the files from the project’s <code>assets</code> folder there so every image resolves over HTTPS. Changing it here only affects your browser.</p>
+    <label for="f-base">Image folder URL</label>
+    <input id="f-base" type="url" spellcheck="false">
+    <div class="hint" id="h-base"></div>
+  </details>
+</div>
+
+<script>
+/* ================= CONFIGURATION ================= */
+const CONFIG = {
+  // Public HTTPS folder where /assets is uploaded. Must end with "/".
+  IMAGE_BASE_URL: "https://www.aladdin365.com/email-signature/assets/",
+  WEBSITE_URL: "https://www.aladdin365.com",
+  WEBSITE_LABEL: "www.aladdin365.com",
+  LINKEDIN: "https://www.linkedin.com/company/aladdin365/",
+  FACEBOOK: "https://www.facebook.com/profile.php?id=100077367064584",
+  INSTAGRAM: "https://www.instagram.com/_aladdin365/",
+  IMAGES: { logo: "logo.png", badge: "itme-badge.png", facebook: "facebook.png", instagram: "instagram.png", linkedin: "linkedin.png" }
+};
+// Images used only for the on-page preview (not in the copied signature).
+const PREVIEW_IMAGES = {
+  "logo": "assets/logo.png",
+  "badge": "assets/itme-badge.png",
+  "facebook": "assets/facebook.png",
+  "instagram": "assets/instagram.png",
+  "linkedin": "assets/linkedin.png"
+};
+/* ================================================= */
+
+const $ = id => document.getElementById(id);
+const fields = { name: $("f-name"), desig: $("f-desig"), phone: $("f-phone"), email: $("f-email") };
+const STORE_KEY = "a365-signature-v1";
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function hostedImages(base) {
+  const out = {};
+  for (const k in CONFIG.IMAGES) out[k] = base + CONFIG.IMAGES[k];
+  return out;
+}
+
+const FONT_LIGHT = "Poppins,'Segoe UI Light','Segoe UI',Helvetica,Arial,sans-serif";
+const FONT_BOLD = "Poppins,'Segoe UI',Helvetica,Arial,sans-serif";
+
+/* Email-safe signature: tables + inline CSS only. */
+function buildSignature(d, img) {
+  const name = d.name ? esc(d.name) : "[Employee Name]";
+  const desig = d.desig ? esc(d.desig) : "[Designation]";
+  const phone = d.phone ? esc(d.phone) : "[Phone Number]";
+  const email = d.email ? esc(d.email) : "[Work Email]";
+  const tel = d.phone ? "tel:" + d.phone.replace(/[^\d+]/g, "") : "";
+  const txt = "font-family:" + FONT_LIGHT + ";font-size:16px;line-height:19px;font-weight:300;color:#040707;mso-line-height-rule:exactly;";
+  const link = "color:#040707;text-decoration:none;font-weight:300;";
+  const phoneHtml = tel ? `<a href="${tel}" style="${link}">${phone}</a>` : phone;
+  const emailHtml = d.email ? `<a href="mailto:${email}" style="${link}">${email}</a>` : email;
+  const zero = "font-size:0;line-height:0;mso-line-height-rule:exactly;";
+
+  return `<table cellpadding="0" cellspacing="0" border="0" width="1000" style="width:1000px;border-collapse:collapse;background-color:#FFFFFF;mso-table-lspace:0pt;mso-table-rspace:0pt;" bgcolor="#FFFFFF">
+<tr>
+<td width="247" height="124" valign="top" style="width:247px;height:124px;padding:0;" bgcolor="#FFFFFF">
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+<td style="padding:40px 0 0 28px;"><a href="${CONFIG.WEBSITE_URL}" target="_blank" style="text-decoration:none;"><img src="${img.logo}" width="188" height="59" alt="Aladdin365" style="display:block;width:188px;height:59px;border:0;outline:none;"></a></td>
+</tr></table>
+</td>
+<td width="1" style="width:1px;padding:0;${zero}" bgcolor="#ADDDF3">&nbsp;</td>
+<td width="323" valign="top" style="width:323px;padding:0;" bgcolor="#FFFFFF">
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+<td style="padding:11px 0 0 33px;${txt}white-space:nowrap;">${name}<br>${desig} | Aladdin365</td>
+</tr><tr>
+<td style="padding:10px 0 0 33px;${txt}white-space:nowrap;">${phoneHtml}<br>${emailHtml}<br><a href="${CONFIG.WEBSITE_URL}" target="_blank" style="${link}">${CONFIG.WEBSITE_LABEL}</a></td>
+</tr></table>
+</td>
+<td width="429" valign="top" style="width:429px;padding:0;background-color:#E3F4FD;" bgcolor="#E3F4FD">
+<table cellpadding="0" cellspacing="0" border="0" width="429" style="width:429px;border-collapse:collapse;"><tr>
+<td width="14" style="width:14px;${zero}">&nbsp;</td>
+<td width="95" valign="top" style="width:95px;padding:5px 0 0 0;"><img src="${img.badge}" width="95" height="114" alt="NEXT India ITME 2026, 4-9 December 2026, IEML Greater Noida" style="display:block;width:95px;height:114px;border:0;"></td>
+<td width="16" style="width:16px;${zero}">&nbsp;</td>
+<td width="160" valign="top" style="width:160px;padding:10px 0 0 0;white-space:nowrap;">
+<div style="font-family:${FONT_BOLD};font-size:9px;line-height:13px;letter-spacing:1px;color:#8A8C8D;font-weight:400;mso-line-height-rule:exactly;">OFFICIAL MEDIA PARTNER</div>
+<div style="font-family:${FONT_BOLD};font-size:25px;line-height:30px;font-weight:700;color:#2D3A8D;mso-line-height-rule:exactly;">INDIA ITME</div>
+<div style="font-family:${FONT_BOLD};font-size:25px;line-height:30px;font-weight:700;color:#A24880;mso-line-height-rule:exactly;">2026</div>
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td height="4" style="height:4px;${zero}">&nbsp;</td></tr><tr><td width="34" height="2" bgcolor="#49C2EA" style="width:34px;height:2px;background-color:#49C2EA;${zero}">&nbsp;</td></tr><tr><td height="5" style="height:5px;${zero}">&nbsp;</td></tr></table>
+<div style="font-family:${FONT_BOLD};font-size:12.5px;line-height:18px;font-weight:700;color:#2D3A8D;mso-line-height-rule:exactly;">4<sup style="font-size:8px;line-height:0;vertical-align:super;">th</sup> - 9<sup style="font-size:8px;line-height:0;vertical-align:super;">th</sup> December 2026</div>
+</td>
+<td width="126" valign="top" style="width:126px;padding:30px 0 0 0;">
+<table cellpadding="0" cellspacing="0" border="0" width="126" style="width:126px;border-collapse:separate;background-color:#A24880;border-radius:12px;" bgcolor="#A24880"><tr>
+<td align="center" style="padding:11px 0;font-family:${FONT_BOLD};font-size:14.5px;line-height:22px;font-weight:700;letter-spacing:1px;color:#FFFFFF;text-align:center;white-space:nowrap;border-radius:12px;mso-line-height-rule:exactly;">Hall No: 12<br>Stall No: C37</td>
+</tr></table>
+</td>
+<td width="18" style="width:18px;${zero}">&nbsp;</td>
+</tr></table>
+</td>
+</tr>
+<tr><td colspan="4" height="2" bgcolor="#49C2EA" style="height:2px;background-color:#49C2EA;${zero}">&nbsp;</td></tr>
+<tr>
+<td colspan="4" height="34" valign="middle" style="height:34px;padding:0;" bgcolor="#FFFFFF">
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
+<td width="28" style="width:28px;${zero}">&nbsp;</td>
+<td valign="middle" style="font-family:${FONT_BOLD};font-size:11.5px;line-height:16px;font-weight:500;color:#2D3A8D;white-space:nowrap;mso-line-height-rule:exactly;">CONNECTING THE TEXTILE &amp; APPAREL INDUSTRY</td>
+<td width="17" style="width:17px;${zero}">&nbsp;</td>
+<td width="1" height="20" bgcolor="#B7B6B6" style="width:1px;height:20px;background-color:#B7B6B6;${zero}">&nbsp;</td>
+<td width="20" style="width:20px;${zero}">&nbsp;</td>
+<td valign="middle" style="font-family:${FONT_LIGHT};font-size:12px;line-height:16px;font-weight:300;color:#818181;white-space:nowrap;mso-line-height-rule:exactly;">Connect. Discover. Learn. Grow</td>
+<td width="21" style="width:21px;${zero}">&nbsp;</td>
+<td valign="middle"><a href="${CONFIG.FACEBOOK}" target="_blank" style="text-decoration:none;"><img src="${img.facebook}" width="20" height="20" alt="Facebook" style="display:block;width:20px;height:20px;border:0;"></a></td>
+<td width="12" style="width:12px;${zero}">&nbsp;</td>
+<td valign="middle"><a href="${CONFIG.INSTAGRAM}" target="_blank" style="text-decoration:none;"><img src="${img.instagram}" width="20" height="20" alt="Instagram" style="display:block;width:20px;height:20px;border:0;"></a></td>
+<td width="14" style="width:14px;${zero}">&nbsp;</td>
+<td valign="middle"><a href="${CONFIG.LINKEDIN}" target="_blank" style="text-decoration:none;"><img src="${img.linkedin}" width="20" height="20" alt="LinkedIn" style="display:block;width:20px;height:20px;border:0;"></a></td>
+</tr></table>
+</td>
+</tr>
+</table>`;
+}
+
+/* ---------- state, validation, preview ---------- */
+function getBase() {
+  let b = ($("f-base").value || CONFIG.IMAGE_BASE_URL).trim();
+  if (b && !b.endsWith("/")) b += "/";
+  return b;
+}
+function readData() {
+  return {
+    name: fields.name.value.trim(),
+    desig: fields.desig.value.trim(),
+    phone: fields.phone.value.trim(),
+    email: fields.email.value.trim()
+  };
+}
+function validate(d) {
+  const errs = {};
+  if (!d.name) errs.name = "Enter your name.";
+  if (!d.desig) errs.desig = "Enter your designation.";
+  if (!d.phone) errs.phone = "Enter your mobile number.";
+  else if (!/^\+?[\d\s\-()]{7,20}$/.test(d.phone)) errs.phone = "Use digits, spaces, + or - only.";
+  if (!d.email) errs.email = "Enter your work email.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) errs.email = "Enter a valid email address.";
+  return errs;
+}
+let touched = {};
+function render() {
+  const d = readData();
+  const errs = validate(d);
+  for (const k in fields) {
+    const show = touched[k] && errs[k];
+    fields[k].setAttribute("aria-invalid", show ? "true" : "false");
+    const h = $("h-" + k);
+    h.textContent = show ? errs[k] : "";
+    h.className = "hint" + (show ? " err" : "");
+  }
+  $("preview").innerHTML = buildSignature(d, PREVIEW_IMAGES);
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ ...d, base: $("f-base").value })); } catch (e) {}
+  return errs;
+}
+function setStatus(msg, kind) {
+  const s = $("status");
+  s.textContent = msg;
+  s.className = "status " + (kind || "");
+}
+function ensureValid() {
+  const errs = render();
+  if (Object.keys(errs).length) {
+    for (const k in fields) touched[k] = true;
+    render();
+    const first = Object.keys(fields).find(k => errs[k]);
+    fields[first].focus();
+    setStatus("Fill in all four details before copying.", "err");
+    return false;
+  }
+  const base = getBase();
+  if (!/^https:\/\/.+/i.test(base)) { setStatus("The image folder URL must start with https://", "err"); return false; }
+  return true;
+}
+function finalHtml() {
+  return buildSignature(readData(), hostedImages(getBase()));
+}
+function plainText(d) {
+  return `${d.name}\n${d.desig} | Aladdin365\n${d.phone}\n${d.email}\n${CONFIG.WEBSITE_LABEL}`;
+}
+
+/* ---------- copy ---------- */
+function fallbackCopyRich(html) {
+  const holder = document.createElement("div");
+  holder.style.cssText = "position:fixed;left:-10000px;top:0;background:#fff;";
+  holder.innerHTML = html;
+  document.body.appendChild(holder);
+  const range = document.createRange();
+  range.selectNodeContents(holder);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  holder.remove();
+  return ok;
+}
+async function copyRich() {
+  if (!ensureValid()) return;
+  const html = finalHtml();
+  const text = plainText(readData());
+  try {
+    if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([text], { type: "text/plain" })
+      })]);
+      setStatus("Signature copied. Paste it into your Gmail or Outlook signature settings.", "ok");
+      return;
+    }
+  } catch (e) { /* fall through */ }
+  if (fallbackCopyRich(html)) setStatus("Signature copied. Paste it into your Gmail or Outlook signature settings.", "ok");
+  else setStatus("Your browser blocked copying. Select the preview with your mouse and press Ctrl + C.", "err");
+}
+async function copyHtml() {
+  if (!ensureValid()) return;
+  const html = finalHtml();
+  try {
+    await navigator.clipboard.writeText(html);
+    setStatus("HTML code copied.", "ok");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = html; ta.style.cssText = "position:fixed;left:-10000px;";
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {}
+    ta.remove();
+    setStatus(ok ? "HTML code copied." : "Your browser blocked copying the HTML code.", ok ? "ok" : "err");
+  }
+}
+
+/* ---------- init ---------- */
+(function init() {
+  $("f-base").value = CONFIG.IMAGE_BASE_URL;
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved) {
+      for (const k in fields) if (saved[k]) fields[k].value = saved[k];
+      if (saved.base) $("f-base").value = saved.base;
+    }
+  } catch (e) {}
+  for (const k in fields) {
+    fields[k].addEventListener("input", () => { setStatus(""); render(); });
+    fields[k].addEventListener("blur", () => { touched[k] = true; render(); });
+  }
+  $("f-base").addEventListener("input", () => {
+    const ok = /^https:\/\/.+/i.test($("f-base").value.trim());
+    $("h-base").textContent = ok ? "" : "Must be an https:// address.";
+    $("h-base").className = "hint" + (ok ? "" : " err");
+    render();
+  });
+  $("btn-copy").addEventListener("click", copyRich);
+  $("btn-copy-html").addEventListener("click", copyHtml);
+  $("btn-reset").addEventListener("click", () => {
+    for (const k in fields) fields[k].value = "";
+    touched = {}; setStatus(""); render(); fields.name.focus();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
